@@ -1,0 +1,151 @@
+CREATE DATABASE IF NOT EXISTS union_almacen_bd default charset utf8 collate utf8_general_ci;
+USE union_almacen_bd ;
+
+CREATE TABLE IF NOT EXISTS sectores(
+  id_sector INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  sector CHAR(1) NOT NULL
+  );
+  
+  
+CREATE TABLE IF NOT EXISTS secciones (
+  id_seccion INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  seccion CHAR(2) NOT NULL UNIQUE,
+  id_sector INT NOT NULL,
+  CONSTRAINT id_sector
+    FOREIGN KEY (id_sector)
+    REFERENCES sectores (id_sector)
+);
+
+CREATE TABLE IF NOT EXISTS categorias_producto (
+  id_cp INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  categoria VARCHAR(50) NOT NULL
+  );
+
+CREATE TABLE IF NOT EXISTS productos (
+  id_productos INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  codigo CHAR(7) NOT NULL UNIQUE,
+  nombre VARCHAR(100) NOT NULL,
+  precio DOUBLE NOT NULL,
+  id_cp INT NOT NULL,
+  CONSTRAINT id_cp
+    FOREIGN KEY (id_cp)
+    REFERENCES categorias_producto(id_cp)
+);
+
+CREATE TABLE IF NOT EXISTS categorias_empleados(
+  id_ce INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  categoria VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS categorias_telefono(
+  id_ct INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  tipo VARCHAR(50) NULL
+);
+
+CREATE TABLE IF NOT EXISTS empleados (
+  id_empleado INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  nombres_apellidos VARCHAR(150) NOT NULL,
+  dni VARCHAR(8) NOT NULL UNIQUE,
+  id_ce INT NOT NULL,
+  CONSTRAINT id_ce
+    FOREIGN KEY (id_ce)
+    REFERENCES categorias_empleados(id_ce)
+);
+
+CREATE TABLE IF NOT EXISTS telefonos(
+  id_empleado INT NOT NULL,
+  numero INT NOT NULL UNIQUE,
+  id_ct INT NOT NULL,
+  CONSTRAINT id_ct
+    FOREIGN KEY (id_ct)
+    REFERENCES categorias_telefono (id_ct),
+  CONSTRAINT id_empleado
+    FOREIGN KEY (id_empleado)
+    REFERENCES empleados (id_empleado)
+);
+
+CREATE TABLE IF NOT EXISTS correos(
+  id_empleado INT NOT NULL,
+  correo VARCHAR(100) NOT NULL,
+  CONSTRAINT id_empleadoS
+    FOREIGN KEY (id_empleado)
+    REFERENCES empleados(id_empleado)
+);
+
+CREATE TABLE IF NOT EXISTS procesos_almacenados (
+  id_pa INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  fecha DATE NOT NULL
+  );
+
+CREATE TABLE IF NOT EXISTS productos_procesos (
+  id_pp INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  id_pa INT NOT NULL,
+  id_producto INT NOT NULL,
+  cantidad INT NOT NULL,
+  CONSTRAINT id_pa
+    FOREIGN KEY (id_pa)
+    REFERENCES procesos_almacenados (id_pa),
+  CONSTRAINT id_producto
+    FOREIGN KEY (id_producto)
+    REFERENCES productos (id_productos)
+);
+
+CREATE TABLE IF NOT EXISTS secciones_productos_procesos (
+  id_pp INT NOT NULL,
+  id_seccion INT NOT NULL,
+  CONSTRAINT id_pp
+    FOREIGN KEY (id_pp)
+    REFERENCES productos_procesos (id_pp),
+  CONSTRAINT id_seccion
+    FOREIGN KEY (id_seccion)
+    REFERENCES secciones(id_seccion)
+);
+
+CREATE TABLE IF NOT EXISTS empleados_procesos(
+  id_pa INT NOT NULL,
+  id_empleado INT NOT NULL,
+  CONSTRAINT id_paA
+    FOREIGN KEY (id_pa)
+    REFERENCES procesos_almacenados(id_pa),
+  CONSTRAINT id_empleadoA
+    FOREIGN KEY (id_empleado)
+    REFERENCES empleados(id_empleado)
+);
+
+
+
+/* Comandos DDL */
+use union_almacen_bd;
+alter table sectores add codigo char(5) not null unique comment 'codigo de verificacion por sectores';
+alter table sectores change codigo codigo_s int(5) not null unique;
+alter table sectores drop column codigo_s;
+  
+create table renombrame(  nombre varchar(100) );
+rename table renombrame to prueba;
+  
+drop table prueba;
+drop table secciones;
+drop database union_almacen_bd;
+
+
+/* Comandos DML */
+use union_almacen_bd;
+insert into sectores(sector) values('A'),('B'),('C');
+insert into secciones(seccion,id_sector) values('h1',1),('h2',2),('h3',3),('g1',1),('g2',2),
+												('g3',3),('k1',1),('k2',2),('k3',3);
+select * from sectores;
+select* from secciones;
+
+select id_seccion,seccion,sector from secciones A1, sectores A2 where A1.id_sector = A2.id_sector;
+
+insert into categorias_producto(categoria) values('Equipamiento'),('Seguridad'),('Lockers'),('Almacenamiento');
+insert into productos(codigo,nombre,precio,id_cp) values('C57FU6T','Traspaletas',2500,1),('C57FU1T','Montacargas',1900,1),
+('C57FU2T','Apiladores',2000,1),('C57FU3T','Caja Fuerte',1200,2),('C57FU4T','Racks',300,4);
+
+select*from categorias_producto;
+select*from productos;
+
+select id_productos,codigo,nombre,precio,categoria from productos A1, categorias_producto A2 where A1.id_cp = A2.id_cp;
+
+select id_productos,codigo,nombre,precio,categoria from productos A1, categorias_producto A2 where A1.id_cp = A2.id_cp 
+																							and categoria='Equipamiento';
